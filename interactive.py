@@ -42,12 +42,11 @@ class Config:
             self.n = len(s[0])
             for i in range(self.n):
                 st = 0 if self.directed else i + 1
-                print(len(s[i]))
                 for j in range(st, self.n):
-                    print(i, j)
+
                     if s[i][j] != '0':
-                        self.u.append(i)
-                        self.v.append(j)
+                        self.u.append(i+1)
+                        self.v.append(j+1)
             self.m = len(self.u)
         elif self.input_type == 1 or self.input_type == 3:
             self.n, self.m = map(int, s[0].split())
@@ -67,10 +66,10 @@ class Config:
             self.n = len(s)
 
             for i in range(self.n):
-                a = map(int, s[i].split())
+                a = list(map(int, s[i].split()))
                 st = 0 if self.directed else i+1
                 for j in range(st, self.n):
-                    ux, vx, wx = i, j, a[i][j]
+                    ux, vx, wx = i+1, j+1, a[j]
                     if wx > 0:
                         self.u.append(ux)
                         self.v.append(vx)
@@ -79,13 +78,19 @@ class Config:
 
     def go(self):
         G = nx.DiGraph() if self.directed else nx.Graph()
-        G.add_nodes_from(range(self.n))
+        G.add_nodes_from(range(1, self.n+1))
         for i in range(self.m):
             if not self.weighted:
                 G.add_edge(self.u[i], self.v[i])
             else:
-                G.add_edge(self.u[i], self.v[i], self.w[i])
-        nx.draw_planar(G, with_labels=True)
+                G.add_edge(self.u[i], self.v[i], weight=self.w[i])
+        # nx.draw_planar(G, with_labels=True)
+        pos = nx.planar_layout(G)
+        if self.weighted:
+            edge_labels = dict([((u, v,), d['weight'])
+                                for u, v, d in G.edges(data=True)])
+            nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+        nx.draw(G, pos, with_labels=True)
         plt.show()
 
 
@@ -95,7 +100,6 @@ print('''
 011            3 2           0 1 2                 3 2
 101            1 2           1 0 2                 1 2 1
 110            2 3           2 0 1                 2 3 2
-3 1
 ''')
 c = Config()
 i = input()
